@@ -1,0 +1,62 @@
+# Stage 1: Build Excalidraw
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
+
+# Copy package files first for better caching
+COPY package.json yarn.lock ./
+COPY excalidraw-app/package.json excalidraw-app/
+COPY packages/common/package.json packages/common/
+COPY packages/element/package.json packages/element/
+COPY packages/excalidraw/package.json packages/excalidraw/
+COPY packages/math/package.json packages/math/
+COPY packages/utils/package.json packages/utils/
+
+RUN yarn install --frozen-lockfile
+
+# Copy all source
+COPY . .
+
+# Build args become env vars for the Vite build
+ARG VITE_APP_WS_SERVER_URL
+ARG VITE_APP_FIREBASE_CONFIG
+ARG VITE_APP_BACKEND_V2_GET_URL=https://json.excalidraw.com/api/v2/
+ARG VITE_APP_BACKEND_V2_POST_URL=https://json.excalidraw.com/api/v2/post/
+ARG VITE_APP_SITE_PASSWORD_HASH
+
+# Write .env.production.local from build args
+RUN printf "VITE_APP_WS_SERVER_URL=%s\nVITE_APP_FIREBASE_CONFIG=%s\nVITE_APP_BACKEND_V2_GET_URL=%s\nVITE_APP_BACKEND_V2_POST_URL=%s\nVITE_APP_SITE_PASSWORD_HASH=%s\n" \
+  "$VITE_APP_WS_SERVER_URL" \
+  "$VITE_APP_FIREBASE_CONFIG" \
+  "$VITE_APP_BACKEND_V2_GET_URL" \
+  "$VITE_APP_BACKEND_V2_POST_URL" \
+  "$VITE_APP_SITE_PASSWORD_HASH" \
+  > .env.production.local
+
+RUN yarn build:app:docker
+
+# Stage 2: Nginx with njs
+FROM nginx:1.27-alpine
+
+# Install njs module
+RUN apk add --no-cache nginx-mod-http-js
+
+# Remove default config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy nginx config and auth files
+COPY deploy/nginx/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY deploy/nginx/auth.js /etc/nginx/njs/auth.js
+COPY deploy/nginx/auth.html /usr/share/nginx/auth/auth.html
+
+# Copy built app
+COPY --from=builder /app/excalidraw-app/build /usr/share/nginx/html
+
+EXPOSE 80 443
+
+# envsubst is run automatically by the nginx docker image
+# for files in /etc/nginx/templates/
+CMD ["nginx", "-g", "daemon off;"]

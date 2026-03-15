@@ -128,7 +128,7 @@ export type SocketUpdateData =
     _brand: "socketUpdateData";
   };
 
-const RE_COLLAB_LINK = /^#room=([a-zA-Z0-9_-]+),([a-zA-Z0-9_-]+)$/;
+const RE_COLLAB_LINK = /^#room=([a-zA-Z0-9_-]+),([a-zA-Z0-9_-]+)/;
 
 export const isCollaborationLink = (link: string) => {
   const hash = new URL(link).hash;
@@ -160,7 +160,9 @@ export const getCollaborationLink = (data: {
   roomId: string;
   roomKey: string;
 }) => {
-  return `${window.location.origin}${window.location.pathname}#room=${data.roomId},${data.roomKey}`;
+  const base = `${window.location.origin}${window.location.pathname}#room=${data.roomId},${data.roomKey}`;
+  const sitePasswordHash = import.meta.env.VITE_APP_SITE_PASSWORD_HASH;
+  return sitePasswordHash ? `${base}&pw=${sitePasswordHash}` : base;
 };
 
 /**

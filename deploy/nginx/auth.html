@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excalidraw — Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: #333;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 2.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 360px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .subtitle {
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    input[type="password"] {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="password"]:focus {
+      border-color: #6965db;
+    }
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background: #6965db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background 0.2s;
+    }
+    button:hover { background: #5b57c9; }
+    button:disabled { background: #aaa; cursor: not-allowed; }
+    .error {
+      color: #e74c3c;
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+      text-align: center;
+      display: none;
+    }
+    .loading { display: none; text-align: center; margin-top: 1rem; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Excalidraw</h1>
+    <p class="subtitle">Enter password to continue</p>
+    <form id="authForm">
+      <input type="password" id="password" placeholder="Password" autocomplete="current-password" autofocus required>
+      <button type="submit" id="submitBtn">Log in</button>
+    </form>
+    <p class="error" id="error">Incorrect password</p>
+    <p class="loading" id="loading">Authenticating...</p>
+  </div>
+
+  <script>
+    (function() {
+      var form = document.getElementById("authForm");
+      var passwordInput = document.getElementById("password");
+      var errorEl = document.getElementById("error");
+      var loadingEl = document.getElementById("loading");
+      var submitBtn = document.getElementById("submitBtn");
+
+      // SHA-256 hash function using SubtleCrypto
+      async function sha256(message) {
+        var msgBuffer = new TextEncoder().encode(message);
+        var hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+        var hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(function(b) { return b.toString(16).padStart(2, "0"); }).join("");
+      }
+
+      async function authenticate(passwordHash) {
+        errorEl.style.display = "none";
+        loadingEl.style.display = "block";
+        submitBtn.disabled = true;
+
+        try {
+          var resp = await fetch("/__auth/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ passwordHash: passwordHash })
+          });
+
+          if (resp.ok) {
+            // Strip &pw= from hash before redirecting
+            var hash = window.location.hash;
+            hash = hash.replace(/&pw=[^&]*/, "");
+            window.location.href = "/" + hash;
+          } else {
+            errorEl.style.display = "block";
+            loadingEl.style.display = "none";
+            submitBtn.disabled = false;
+          }
+        } catch (e) {
+          errorEl.textContent = "Network error";
+          errorEl.style.display = "block";
+          loadingEl.style.display = "none";
+          submitBtn.disabled = false;
+        }
+      }
+
+      // Check for auto-auth via URL hash: &pw=<sha256hash>
+      var hash = window.location.hash;
+      var pwMatch = hash.match(/[&?]pw=([a-fA-F0-9]{64})/);
+      if (pwMatch) {
+        authenticate(pwMatch[1]);
+      }
+
+      form.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        var password = passwordInput.value;
+        if (!password) return;
+        var hash = await sha256(password);
+        authenticate(hash);
+      });
+    })();
+  </script>
+</body>
+</html>
