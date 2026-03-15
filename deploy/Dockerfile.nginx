@@ -36,6 +36,7 @@ RUN printf "VITE_APP_WS_SERVER_URL=%s\nVITE_APP_FIREBASE_CONFIG=%s\nVITE_APP_BAC
   "$VITE_APP_SITE_PASSWORD_HASH" \
   > .env.production.local
 
+ENV NODE_OPTIONS="--max-old-space-size=768"
 RUN yarn build:app:docker
 
 # Stage 2: Nginx with njs
