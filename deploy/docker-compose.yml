@@ -28,6 +28,8 @@ services:
       - /var/cache/nginx:size=32m
       - /var/run:size=1m
       - /tmp:size=16m
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - excalidraw-room
 

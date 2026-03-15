@@ -28,7 +28,26 @@ http {
     # Rate limit login attempts
     limit_req_zone $binary_remote_addr zone=auth_limit:1m rate=5r/m;
 
-    # HTTP server — ACME challenge + redirect
+    # ── Villa Sirene (HTTP only, raw IP / EC2 hostname) ──
+    server {
+        listen 80 default_server;
+        server_name _;
+
+        # Let ACME challenges through for any domain
+        location /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+        }
+
+        # Proxy everything else to gunicorn on host port 8080
+        location / {
+            proxy_pass http://host.docker.internal:8080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+
+    # ── Excalidraw: HTTP → HTTPS redirect ──
     server {
         listen 80;
         server_name ${DOMAIN};
@@ -42,7 +61,7 @@ http {
         }
     }
 
-    # HTTPS server
+    # ── Excalidraw: HTTPS ──
     server {
         listen 443 ssl;
         http2 on;
