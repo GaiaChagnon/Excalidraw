@@ -45,6 +45,8 @@ services:
       dockerfile: Dockerfile
     expose:
       - "80"
+    environment:
+      - DEBUG=*
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
