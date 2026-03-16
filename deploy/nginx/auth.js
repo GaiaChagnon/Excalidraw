@@ -26,27 +26,21 @@ function getCookie(r, name) {
   return "";
 }
 
-function verify(r) {
+// js_set variable: returns "1" if authenticated, "" otherwise
+function checkAuth(r) {
   try {
     var token = getCookie(r, COOKIE_NAME);
-    if (!token) {
-      r.return(401);
-      return;
-    }
+    if (!token) return "";
     var dot = token.indexOf(".");
-    if (dot < 0) {
-      r.return(401);
-      return;
-    }
+    if (dot < 0) return "";
     var payload = token.substring(0, dot);
     var sig = token.substring(dot + 1);
     if (payload === "authenticated" && sig === sign(payload)) {
-      r.return(200);
-    } else {
-      r.return(401);
+      return "1";
     }
+    return "";
   } catch (e) {
-    r.return(401);
+    return "";
   }
 }
 
@@ -94,4 +88,4 @@ function loginPage(r) {
   }
 }
 
-export default { verify, login, loginPage };
+export default { checkAuth, login, loginPage };
