@@ -101,7 +101,7 @@ export const saveFilesToFirebase = async ({
     files.map(async ({ id, buffer }) => {
       try {
         const resp = await fetch(
-          `/v1/storage/files/${encodeURIComponent(prefix)}/${id}`,
+          `/v1/storage/files/${encodeURIComponent(prefix.replace(/^\//, ""))}/${id}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/octet-stream" },
