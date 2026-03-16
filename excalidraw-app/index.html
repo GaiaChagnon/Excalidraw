@@ -99,21 +99,13 @@
     <!------------------------------------------------------------------------->
     <% if (typeof PROD != 'undefined' && PROD == true) { %>
     <script>
-      // Redirect Excalidraw+ users which have auto-redirect enabled.
-      //
-      // Redirect only the bare root path, so link/room/library urls are not
-      // redirected.
-      //
-      // Putting into index.html for best performance (can't redirect on server
-      // due to location.hash checks).
+      // Redirect to room picker if no room hash is present.
+      // Must run before React to avoid flash/strobe.
       if (
         window.location.pathname === "/" &&
-        !window.location.hash &&
-        !window.location.search &&
-        // if its present redirect
-        document.cookie.includes("excplus-autoredirect=true")
+        !window.location.hash.match(/^#room=/)
       ) {
-        window.location.href = "https://app.excalidraw.com";
+        window.location.replace("/__rooms");
       }
     </script>
 
@@ -215,38 +207,6 @@
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
     <% if (typeof PROD != 'undefined' && PROD == true) { %>
-    <!-- 100% privacy friendly analytics -->
-    <script>
-      // need to load this script dynamically bcs. of iframe embed tracking
-      var scriptEle = document.createElement("script");
-      scriptEle.setAttribute(
-        "src",
-        "https://scripts.simpleanalyticscdn.com/latest.js",
-      );
-      scriptEle.setAttribute("type", "text/javascript");
-      scriptEle.setAttribute("defer", true);
-      scriptEle.setAttribute("async", true);
-      // if iframe
-      if (window.self !== window.top) {
-        scriptEle.setAttribute("data-auto-collect", true);
-      }
-
-      document.body.appendChild(scriptEle);
-
-      // if iframe
-      if (window.self !== window.top) {
-        scriptEle.addEventListener("load", () => {
-          if (window.sa_pageview) {
-            window.window.sa_event(action, {
-              category: "iframe",
-              label: "embed",
-              value: window.location.pathname,
-            });
-          }
-        });
-      }
-    </script>
-    <!-- end LEGACY GOOGLE ANALYTICS -->
     <% } %>
   </body>
 </html>

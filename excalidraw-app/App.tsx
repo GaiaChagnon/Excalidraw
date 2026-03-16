@@ -312,14 +312,6 @@ const initializeScene = async (opts: {
     }
   }
 
-  // If no room link in URL, redirect to room picker
-  if (!roomLinkData && !isExternalScene) {
-    window.location.replace("/__rooms");
-    // Return a never-resolving promise so the app stays in loading state
-    // while the browser navigates away
-    return new Promise(() => {});
-  }
-
   if (roomLinkData && opts.collabAPI) {
     const { excalidrawAPI } = opts;
 
