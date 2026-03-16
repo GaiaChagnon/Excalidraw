@@ -116,14 +116,22 @@ function saveRooms(rooms) {
   fs.writeFileSync(ROOMS_FILE, JSON.stringify(rooms, null, 2));
 }
 
-function randomHex(bytes) {
-  var c = require("crypto");
-  return c.randomBytes(bytes).toString("hex");
+function randomHex(len) {
+  var chars = "0123456789abcdef";
+  var result = "";
+  for (var i = 0; i < len * 2; i++) {
+    result += chars[Math.floor(Math.random() * 16)];
+  }
+  return result;
 }
 
-function randomBase64Url(bytes) {
-  var c = require("crypto");
-  return c.randomBytes(bytes).toString("base64url");
+function randomAlphaNum(len) {
+  var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  var result = "";
+  for (var i = 0; i < len; i++) {
+    result += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return result;
 }
 
 function getAdminHash() {
@@ -154,7 +162,7 @@ function roomsApi(r) {
       var rooms = loadRooms();
       var room = {
         id: randomHex(10),
-        key: randomBase64Url(16).substring(0, 22),
+        key: randomAlphaNum(22),
         name: name,
         created: new Date().toISOString()
       };
