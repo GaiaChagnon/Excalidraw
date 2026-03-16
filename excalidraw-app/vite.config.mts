@@ -148,6 +148,12 @@ export default defineConfig(({ mode }) => {
         },
 
         workbox: {
+          // Prevent the SW from serving the SPA shell for server-rendered routes
+          navigateFallbackDenylist: [
+            /^\/__rooms/,
+            /^\/__auth/,
+            /^\/__api/,
+          ],
           // don't precache fonts, locales and separate chunks
           globIgnores: [
             "fonts.css",

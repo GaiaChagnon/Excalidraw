@@ -172,6 +172,43 @@ function roomsApi(r) {
       return;
     }
 
+    if (r.method === "PUT") {
+      var body = JSON.parse(r.requestText);
+      var adminHash = body.adminPasswordHash || "";
+      if (adminHash !== getAdminHash()) {
+        r.return(403, '{"error":"wrong admin password"}');
+        return;
+      }
+      var id = r.args.id;
+      if (!id) {
+        r.return(400, '{"error":"missing room id"}');
+        return;
+      }
+      var name = (body.name || "").trim();
+      if (!name || name.length > 50) {
+        r.return(400, '{"error":"invalid name"}');
+        return;
+      }
+      var rooms = loadRooms();
+      var found = false;
+      var updatedRoom = null;
+      for (var i = 0; i < rooms.length; i++) {
+        if (rooms[i].id === id) {
+          rooms[i].name = name;
+          updatedRoom = rooms[i];
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        r.return(404, '{"error":"room not found"}');
+        return;
+      }
+      saveRooms(rooms);
+      r.return(200, JSON.stringify(updatedRoom));
+      return;
+    }
+
     if (r.method === "DELETE") {
       var body = JSON.parse(r.requestText);
       var adminHash = body.adminPasswordHash || "";

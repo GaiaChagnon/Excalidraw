@@ -99,6 +99,18 @@
     <!------------------------------------------------------------------------->
     <% if (typeof PROD != 'undefined' && PROD == true) { %>
     <script>
+      // If the service worker served this page for /__rooms, bail out
+      // so the server-rendered rooms page loads instead.
+      if (
+        window.location.pathname === "/__rooms" ||
+        window.location.pathname.startsWith("/__auth") ||
+        window.location.pathname.startsWith("/__api")
+      ) {
+        // Stop the page — do not load React app
+        document.write("");
+        window.location.reload();
+      }
+
       // Redirect to room picker if no room hash is present.
       // Must run before React to avoid flash/strobe.
       if (
