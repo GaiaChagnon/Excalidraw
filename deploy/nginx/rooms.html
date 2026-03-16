@@ -184,6 +184,67 @@
     .btn-confirm-rename { background: #6965db; color: white; }
     .error-msg { color: #e74c3c; font-size: 0.85rem; margin-top: 0.25rem; display: none; }
     .label { font-size: 0.85rem; color: #666; margin-bottom: 0.35rem; }
+
+    /* Libraries section */
+    .libraries-section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1.5px solid #eee;
+    }
+    .libraries-section h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: #666;
+    }
+    .library-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .library-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1rem;
+      border: 1.5px solid #eee;
+      border-radius: 8px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .library-item:hover {
+      border-color: #6965db;
+      background: #f8f7ff;
+    }
+    .library-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .library-name {
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+    .library-desc {
+      font-size: 0.78rem;
+      color: #999;
+    }
+    .btn-install {
+      padding: 0.4rem 0.9rem;
+      background: #eee;
+      color: #555;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, color 0.2s;
+      text-decoration: none;
+    }
+    .btn-install:hover {
+      background: #6965db;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -200,6 +261,33 @@
       <input type="text" id="roomName" placeholder="New room name" required maxlength="50">
       <button type="submit" class="btn-create">Create</button>
     </form>
+
+    <div class="libraries-section">
+      <h2>Libraries (optional)</h2>
+      <ul class="library-list">
+        <li class="library-item">
+          <div class="library-info">
+            <span class="library-name">Deep Learning</span>
+            <span class="library-desc">Neural network and ML diagram components</span>
+          </div>
+          <a class="btn-install" href="/#addLibrary=https://draw.gaiachagnon.com/libraries/deep-learning.excalidrawlib&token=excalidraw">Install</a>
+        </li>
+        <li class="library-item">
+          <div class="library-info">
+            <span class="library-name">Schematic Symbols</span>
+            <span class="library-desc">Electronic circuit and schematic symbols</span>
+          </div>
+          <a class="btn-install" href="/#addLibrary=https://draw.gaiachagnon.com/libraries/schematic-symbols.excalidrawlib&token=excalidraw">Install</a>
+        </li>
+        <li class="library-item">
+          <div class="library-info">
+            <span class="library-name">Architecture Floor Plan</span>
+            <span class="library-desc">Furniture and symbols for architecture planning</span>
+          </div>
+          <a class="btn-install" href="/#addLibrary=https://draw.gaiachagnon.com/libraries/architecture.excalidrawlib&token=excalidraw">Install</a>
+        </li>
+      </ul>
+    </div>
   </div>
 
   <!-- Delete modal -->

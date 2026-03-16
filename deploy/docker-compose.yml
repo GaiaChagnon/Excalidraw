@@ -22,6 +22,7 @@ services:
     depends_on:
       - excalidraw-room
       - ai-proxy
+      - storage-api
 
   ai-proxy:
     build:
@@ -49,6 +50,19 @@ services:
       - no-new-privileges:true
     mem_limit: 128m
 
+  storage-api:
+    build:
+      context: ./storage-api
+      dockerfile: Dockerfile
+    expose:
+      - "3017"
+    volumes:
+      - storage-data:/data
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 64m
+
   certbot:
     image: certbot/certbot:latest
     volumes:
@@ -62,3 +76,4 @@ volumes:
   certbot-conf:
   certbot-www:
   rooms-data:
+  storage-data:

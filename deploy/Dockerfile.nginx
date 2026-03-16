@@ -16,6 +16,9 @@ COPY nginx/rooms.html /usr/share/nginx/auth/rooms.html
 COPY nginx/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Copy library files
+COPY nginx/libraries/ /usr/share/nginx/libraries/
+
 # Copy pre-built app
 COPY build/ /usr/share/nginx/html
 

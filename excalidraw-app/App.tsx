@@ -888,6 +888,8 @@ const ExcalidrawWrapper = () => {
               <button
                 className="back-to-rooms-btn"
                 onClick={() => {
+                  // Flush any pending saves before leaving
+                  LocalData.flushSave();
                   window.location.href = "/__rooms";
                 }}
                 title="Back to Rooms"

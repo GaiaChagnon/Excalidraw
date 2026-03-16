@@ -35,7 +35,8 @@
       font-size: 0.9rem;
       margin-bottom: 1.5rem;
     }
-    input[type="password"] {
+    input[type="password"],
+    input[type="text"] {
       width: 100%;
       padding: 0.75rem 1rem;
       border: 1.5px solid #ddd;
@@ -44,7 +45,8 @@
       outline: none;
       transition: border-color 0.2s;
     }
-    input[type="password"]:focus {
+    input[type="password"]:focus,
+    input[type="text"]:focus {
       border-color: #6965db;
     }
     button {
@@ -70,28 +72,53 @@
       display: none;
     }
     .loading { display: none; text-align: center; margin-top: 1rem; color: #888; }
+    .step { transition: opacity 0.3s ease; }
+    .step.hidden {
+      display: none;
+      opacity: 0;
+    }
+    .step.visible {
+      display: block;
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Excalidraw</h1>
-    <p class="subtitle">Enter password to continue</p>
-    <form id="authForm">
-      <input type="text" id="alias" placeholder="Your name / alias" autocomplete="username" autofocus required maxlength="30" style="margin-bottom: 0.75rem;">
-      <input type="password" id="password" placeholder="Password" autocomplete="current-password" required>
-      <button type="submit" id="submitBtn">Log in</button>
-    </form>
-    <p class="error" id="error">Incorrect password</p>
-    <p class="loading" id="loading">Authenticating...</p>
+    <!-- Step 1: Password -->
+    <div id="stepPassword" class="step visible">
+      <h1>Excalidraw</h1>
+      <p class="subtitle">Enter password to continue</p>
+      <form id="authForm">
+        <input type="password" id="password" placeholder="Password" autocomplete="current-password" autofocus required>
+        <button type="submit" id="submitBtn">Log in</button>
+      </form>
+      <p class="error" id="error">Incorrect password</p>
+      <p class="loading" id="loading">Authenticating...</p>
+    </div>
+
+    <!-- Step 2: Alias -->
+    <div id="stepAlias" class="step hidden">
+      <h1>Welcome!</h1>
+      <p class="subtitle">Choose your display name</p>
+      <form id="aliasForm">
+        <input type="text" id="alias" placeholder="Your name / alias" autocomplete="username" maxlength="30" required>
+        <button type="submit">Continue</button>
+      </form>
+    </div>
   </div>
 
   <script>
     (function() {
-      var form = document.getElementById("authForm");
+      var authForm = document.getElementById("authForm");
+      var aliasForm = document.getElementById("aliasForm");
       var passwordInput = document.getElementById("password");
+      var aliasInput = document.getElementById("alias");
       var errorEl = document.getElementById("error");
       var loadingEl = document.getElementById("loading");
       var submitBtn = document.getElementById("submitBtn");
+      var stepPassword = document.getElementById("stepPassword");
+      var stepAlias = document.getElementById("stepAlias");
 
       // SHA-256 hash function using SubtleCrypto
       async function sha256(message) {
@@ -101,7 +128,36 @@
         return hashArray.map(function(b) { return b.toString(16).padStart(2, "0"); }).join("");
       }
 
-      async function authenticate(passwordHash, alias) {
+      function getExistingAlias() {
+        try {
+          var saved = JSON.parse(localStorage.getItem("excalidraw-collab") || "{}");
+          return saved.username || "";
+        } catch (e) {
+          return "";
+        }
+      }
+
+      function redirect() {
+        var hash = window.location.hash;
+        hash = hash.replace(/&pw=[^&]*/, "");
+        window.location.href = "/" + hash;
+      }
+
+      function showAliasStep() {
+        stepPassword.classList.remove("visible");
+        stepPassword.classList.add("hidden");
+        stepAlias.classList.remove("hidden");
+        stepAlias.classList.add("visible");
+
+        // Pre-fill with existing alias
+        var existing = getExistingAlias();
+        if (existing) {
+          aliasInput.value = existing;
+        }
+        aliasInput.focus();
+      }
+
+      async function authenticate(passwordHash) {
         errorEl.style.display = "none";
         loadingEl.style.display = "block";
         submitBtn.disabled = true;
@@ -114,54 +170,59 @@
           });
 
           if (resp.ok) {
-            // Save alias to localStorage so Excalidraw uses it as username
-            if (alias) {
-              try {
-                localStorage.setItem("excalidraw-collab", JSON.stringify({ username: alias }));
-              } catch (e) {}
-            }
-            // Strip &pw= from hash before redirecting
-            var hash = window.location.hash;
-            hash = hash.replace(/&pw=[^&]*/, "");
-            window.location.href = "/" + hash;
+            return true;
           } else {
             errorEl.style.display = "block";
             loadingEl.style.display = "none";
             submitBtn.disabled = false;
+            return false;
           }
         } catch (e) {
           errorEl.textContent = "Network error";
           errorEl.style.display = "block";
           loadingEl.style.display = "none";
           submitBtn.disabled = false;
+          return false;
         }
       }
-
-      var aliasInput = document.getElementById("alias");
-
-      // Try to pre-fill alias from localStorage
-      try {
-        var saved = JSON.parse(localStorage.getItem("excalidraw-collab") || "{}");
-        if (saved.username) aliasInput.value = saved.username;
-      } catch (e) {}
 
       // Check for auto-auth via URL hash: &pw=<sha256hash>
       var hash = window.location.hash;
       var pwMatch = hash.match(/[&?]pw=([a-fA-F0-9]{64})/);
       if (pwMatch) {
-        // For auto-auth, use existing alias if available
-        var existingAlias = aliasInput.value || "Guest";
-        authenticate(pwMatch[1], existingAlias);
+        // For auto-auth, use existing alias or "Guest", skip alias step
+        authenticate(pwMatch[1]).then(function(ok) {
+          if (ok) {
+            var existingAlias = getExistingAlias() || "Guest";
+            try {
+              localStorage.setItem("excalidraw-collab", JSON.stringify({ username: existingAlias }));
+            } catch (e) {}
+            redirect();
+          }
+        });
       }
 
-      form.addEventListener("submit", async function(e) {
+      // Step 1: Password form submission
+      authForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        var password = passwordInput.value;
+        if (!password) return;
+        var passwordHash = await sha256(password);
+        var ok = await authenticate(passwordHash);
+        if (ok) {
+          showAliasStep();
+        }
+      });
+
+      // Step 2: Alias form submission
+      aliasForm.addEventListener("submit", function(e) {
         e.preventDefault();
         var alias = aliasInput.value.trim();
         if (!alias) { aliasInput.focus(); return; }
-        var password = passwordInput.value;
-        if (!password) return;
-        var hash = await sha256(password);
-        authenticate(hash, alias);
+        try {
+          localStorage.setItem("excalidraw-collab", JSON.stringify({ username: alias }));
+        } catch (e) {}
+        redirect();
       });
     })();
   </script>
