@@ -113,6 +113,36 @@
   }
 }
 
+.change-nickname-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--lg-button-size);
+  padding: 0 0.875rem;
+  border-radius: var(--border-radius-lg);
+  border: none;
+  background: #d94a4a;
+  color: #fff;
+  font-family: var(--ui-font);
+  font-size: 0.8333rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 0 0 1px var(--color-surface-lowest);
+  flex-shrink: 0;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover {
+    background: #c03030;
+  }
+
+  &:active {
+    background: #a82828;
+  }
+}
+
 .excalidraw-app.is-collaborating {
   [data-testid="clear-canvas-button"] {
     display: none;

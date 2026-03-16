@@ -896,6 +896,19 @@ const ExcalidrawWrapper = () => {
               >
                 Rooms
               </button>
+              <button
+                className="change-nickname-btn"
+                onClick={() => {
+                  const current = collabAPI?.getUsername() || "";
+                  const newName = window.prompt("Change your display name:", current);
+                  if (newName !== null && newName.trim()) {
+                    collabAPI?.setUsername(newName.trim());
+                  }
+                }}
+                title="Change Nickname"
+              >
+                {collabAPI?.getUsername() || "Nickname"}
+              </button>
               <LiveCollaborationTrigger
                 isCollaborating={isCollaborating}
                 onSelect={() =>

@@ -190,14 +190,10 @@
       var hash = window.location.hash;
       var pwMatch = hash.match(/[&?]pw=([a-fA-F0-9]{64})/);
       if (pwMatch) {
-        // For auto-auth, use existing alias or "Guest", skip alias step
+        // Auto-auth: skip password step, but still ask for nickname
         authenticate(pwMatch[1]).then(function(ok) {
           if (ok) {
-            var existingAlias = getExistingAlias() || "Guest";
-            try {
-              localStorage.setItem("excalidraw-collab", JSON.stringify({ username: existingAlias }));
-            } catch (e) {}
-            redirect();
+            showAliasStep();
           }
         });
       }
