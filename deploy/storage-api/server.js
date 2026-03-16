@@ -165,12 +165,14 @@ const server = http.createServer(async (req, res) => {
   }
 
   const url = new URL(req.url, `http://${req.headers.host}`);
-  const pathname = decodeURIComponent(url.pathname);
+  // Don't decode full pathname before matching — encoded slashes (%2F)
+  // in the prefix would break the regex. Decode matched groups instead.
+  const pathname = url.pathname;
 
   // Route: /v1/storage/scenes/:roomId
   const sceneMatch = pathname.match(/^\/v1\/storage\/scenes\/([^/]+)$/);
   if (sceneMatch) {
-    const roomId = sceneMatch[1];
+    const roomId = decodeURIComponent(sceneMatch[1]);
     if (req.method === "GET") {
       return handleGetScene(req, res, roomId);
     }
@@ -183,10 +185,11 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Route: /v1/storage/files/:prefix/:fileId
+  // The prefix may contain encoded slashes (e.g., files%2Frooms%2FroomId)
   const fileMatch = pathname.match(/^\/v1\/storage\/files\/([^/]+)\/([^/]+)$/);
   if (fileMatch) {
-    const prefix = fileMatch[1];
-    const fileId = fileMatch[2];
+    const prefix = decodeURIComponent(fileMatch[1]);
+    const fileId = decodeURIComponent(fileMatch[2]);
     if (req.method === "GET") {
       return handleGetFile(req, res, prefix, fileId);
     }
@@ -199,7 +202,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Health check
-  if (pathname === "/health" && req.method === "GET") {
+  if ((pathname === "/health" || pathname === "/v1/storage/health") && req.method === "GET") {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ status: "ok" }));
     return;
