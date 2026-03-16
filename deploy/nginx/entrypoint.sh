@@ -13,4 +13,10 @@ if [ ! -f "$CERT_DIR/fullchain.pem" ]; then
     -subj "/CN=draw.gaiachagnon.com" 2>/dev/null
 fi
 
+# Ensure /data is writable by nginx worker and rooms.json exists
+mkdir -p /data
+chmod 777 /data
+[ -f /data/rooms.json ] || echo '[]' > /data/rooms.json
+chmod 666 /data/rooms.json
+
 exec nginx -g "daemon off;"
