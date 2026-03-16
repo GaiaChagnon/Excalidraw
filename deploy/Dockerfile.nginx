@@ -1,23 +1,23 @@
 # Single stage: Nginx with njs
-# The SPA is built locally and copied in via docker-compose volume or COPY
 FROM nginx:1.27-alpine
 
-# Install njs module
-RUN apk add --no-cache nginx-mod-http-js
+# Install njs module and openssl (for self-signed cert generation)
+RUN apk add --no-cache nginx-mod-http-js openssl
 
-# Remove default config
-RUN rm /etc/nginx/conf.d/default.conf
+# Remove default config and templates
+RUN rm -f /etc/nginx/conf.d/default.conf
+RUN rm -rf /etc/nginx/templates
 
-# Copy nginx config and auth files
-COPY nginx/nginx.conf.template /etc/nginx/templates/default.conf.template
+# Copy nginx config (static, no envsubst needed)
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
 COPY nginx/auth.js /etc/nginx/njs/auth.js
 COPY nginx/auth.html /usr/share/nginx/auth/auth.html
+COPY nginx/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-# Copy pre-built app (built locally, uploaded to deploy/build/)
+# Copy pre-built app
 COPY build/ /usr/share/nginx/html
 
 EXPOSE 80 443
 
-# envsubst is run automatically by the nginx docker image
-# for files in /etc/nginx/templates/
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/entrypoint.sh"]

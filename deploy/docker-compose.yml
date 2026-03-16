@@ -7,21 +7,15 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - certbot-conf:/etc/letsencrypt:ro
+      - certbot-conf:/etc/letsencrypt
       - certbot-www:/var/www/certbot:ro
     environment:
-      - DOMAIN=${DOMAIN}
       - SITE_PASSWORD_HASH=${SITE_PASSWORD_HASH}
       - COOKIE_SECRET=${COOKIE_SECRET}
     restart: unless-stopped
-    read_only: true
     security_opt:
       - no-new-privileges:true
     mem_limit: 128m
-    tmpfs:
-      - /var/cache/nginx:size=32m
-      - /var/run:size=1m
-      - /tmp:size=16m
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -34,12 +28,9 @@ services:
     expose:
       - "80"
     restart: unless-stopped
-    read_only: true
     security_opt:
       - no-new-privileges:true
     mem_limit: 128m
-    tmpfs:
-      - /tmp:size=16m
 
   certbot:
     image: certbot/certbot:latest
