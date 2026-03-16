@@ -105,7 +105,7 @@ export const saveFilesToFirebase = async ({
           {
             method: "PUT",
             headers: { "Content-Type": "application/octet-stream" },
-            body: buffer,
+            body: buffer as unknown as BodyInit,
           },
         );
         if (resp.ok) {
@@ -207,7 +207,7 @@ export const saveToFirebase = async (
   });
 
   FirebaseSceneVersionCache.set(socket, elements);
-  return toBrandedType<RemoteExcalidrawElement[]>(elements);
+  return toBrandedType<RemoteExcalidrawElement[]>([...elements]);
 };
 
 export const loadFromFirebase = async (
