@@ -9,6 +9,7 @@ const https = require("https");
 const PORT = process.env.PORT || 3016;
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const DEFAULT_MODEL = process.env.AI_MODEL || "deepseek/deepseek-v3.2";
+const VISION_MODEL = process.env.AI_VISION_MODEL || "google/gemini-2.0-flash-001";
 
 const SYSTEM_PROMPT_TTD = `You are an expert at generating Mermaid diagram syntax. The user will describe a diagram and you must respond with ONLY valid Mermaid syntax. Do not include any explanation, markdown code fences, or other text. Just the raw Mermaid diagram code.`;
 
@@ -145,7 +146,7 @@ async function handleD2C(req, res) {
       .join("\n");
 
     const openRouterBody = {
-      model: DEFAULT_MODEL,
+      model: body.image ? VISION_MODEL : DEFAULT_MODEL,
       messages: [
         { role: "system", content: SYSTEM_PROMPT_D2C },
         {
@@ -215,5 +216,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`AI proxy listening on port ${PORT}, model: ${DEFAULT_MODEL}`);
+  console.log(`AI proxy listening on port ${PORT}, text model: ${DEFAULT_MODEL}, vision model: ${VISION_MODEL}`);
 });

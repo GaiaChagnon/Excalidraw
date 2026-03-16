@@ -77,7 +77,8 @@
     <h1>Excalidraw</h1>
     <p class="subtitle">Enter password to continue</p>
     <form id="authForm">
-      <input type="password" id="password" placeholder="Password" autocomplete="current-password" autofocus required>
+      <input type="text" id="alias" placeholder="Your name / alias" autocomplete="username" autofocus required maxlength="30" style="margin-bottom: 0.75rem;">
+      <input type="password" id="password" placeholder="Password" autocomplete="current-password" required>
       <button type="submit" id="submitBtn">Log in</button>
     </form>
     <p class="error" id="error">Incorrect password</p>
@@ -100,7 +101,7 @@
         return hashArray.map(function(b) { return b.toString(16).padStart(2, "0"); }).join("");
       }
 
-      async function authenticate(passwordHash) {
+      async function authenticate(passwordHash, alias) {
         errorEl.style.display = "none";
         loadingEl.style.display = "block";
         submitBtn.disabled = true;
@@ -113,6 +114,12 @@
           });
 
           if (resp.ok) {
+            // Save alias to localStorage so Excalidraw uses it as username
+            if (alias) {
+              try {
+                localStorage.setItem("excalidraw-collab", JSON.stringify({ username: alias }));
+              } catch (e) {}
+            }
             // Strip &pw= from hash before redirecting
             var hash = window.location.hash;
             hash = hash.replace(/&pw=[^&]*/, "");
@@ -130,19 +137,31 @@
         }
       }
 
+      var aliasInput = document.getElementById("alias");
+
+      // Try to pre-fill alias from localStorage
+      try {
+        var saved = JSON.parse(localStorage.getItem("excalidraw-collab") || "{}");
+        if (saved.username) aliasInput.value = saved.username;
+      } catch (e) {}
+
       // Check for auto-auth via URL hash: &pw=<sha256hash>
       var hash = window.location.hash;
       var pwMatch = hash.match(/[&?]pw=([a-fA-F0-9]{64})/);
       if (pwMatch) {
-        authenticate(pwMatch[1]);
+        // For auto-auth, use existing alias if available
+        var existingAlias = aliasInput.value || "Guest";
+        authenticate(pwMatch[1], existingAlias);
       }
 
       form.addEventListener("submit", async function(e) {
         e.preventDefault();
+        var alias = aliasInput.value.trim();
+        if (!alias) { aliasInput.focus(); return; }
         var password = passwordInput.value;
         if (!password) return;
         var hash = await sha256(password);
-        authenticate(hash);
+        authenticate(hash, alias);
       });
     })();
   </script>

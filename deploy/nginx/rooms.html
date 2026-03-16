@@ -500,6 +500,9 @@
     document.addEventListener("drop", function(e) { e.preventDefault(); });
 
     loadRooms();
+
+    // Auto-refresh room list every 5 seconds
+    setInterval(loadRooms, 5000);
   </script>
 </body>
 </html>

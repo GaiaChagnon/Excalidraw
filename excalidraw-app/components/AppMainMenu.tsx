@@ -22,14 +22,6 @@ export const AppMainMenu: React.FC<{
 }> = React.memo((props) => {
   return (
     <MainMenu>
-      <MainMenu.Item
-        onSelect={() => {
-          window.location.href = "/__rooms";
-        }}
-      >
-        Back to Rooms
-      </MainMenu.Item>
-      <MainMenu.Separator />
       <MainMenu.DefaultItems.LoadScene />
       <MainMenu.DefaultItems.SaveToActiveFile />
       <MainMenu.DefaultItems.Export />

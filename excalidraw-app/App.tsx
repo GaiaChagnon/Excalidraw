@@ -885,6 +885,15 @@ const ExcalidrawWrapper = () => {
           return (
             <div className="excalidraw-ui-top-right">
               {collabError.message && <CollabError collabError={collabError} />}
+              <button
+                className="back-to-rooms-btn"
+                onClick={() => {
+                  window.location.href = "/__rooms";
+                }}
+                title="Back to Rooms"
+              >
+                Rooms
+              </button>
               <LiveCollaborationTrigger
                 isCollaborating={isCollaborating}
                 onSelect={() =>
