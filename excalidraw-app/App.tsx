@@ -99,8 +99,6 @@ import { TopErrorBoundary } from "./components/TopErrorBoundary";
 
 import {
   exportToBackend,
-  generateCollaborationLinkData,
-  getCollaborationLink,
   getCollaborationLinkData,
   importFromBackend,
   isCollaborationLink,
@@ -314,15 +312,10 @@ const initializeScene = async (opts: {
     }
   }
 
-  // Auto-start collaboration if no room link in URL
-  if (!roomLinkData && opts.collabAPI && !isExternalScene) {
-    const linkData = await generateCollaborationLinkData();
-    roomLinkData = linkData;
-    window.history.replaceState(
-      {},
-      APP_NAME,
-      getCollaborationLink(linkData),
-    );
+  // If no room link in URL, redirect to room picker
+  if (!roomLinkData && !isExternalScene) {
+    window.location.href = "/__rooms";
+    return { scene: null, isExternalScene: false };
   }
 
   if (roomLinkData && opts.collabAPI) {

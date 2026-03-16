@@ -9,6 +9,7 @@ services:
     volumes:
       - certbot-conf:/etc/letsencrypt
       - certbot-www:/var/www/certbot:ro
+      - rooms-data:/data
     environment:
       - SITE_PASSWORD_HASH=${SITE_PASSWORD_HASH}
       - COOKIE_SECRET=${COOKIE_SECRET}
@@ -44,3 +45,4 @@ services:
 volumes:
   certbot-conf:
   certbot-www:
+  rooms-data:
