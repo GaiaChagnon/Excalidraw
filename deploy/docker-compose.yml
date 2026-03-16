@@ -21,6 +21,21 @@ services:
       - "host.docker.internal:host-gateway"
     depends_on:
       - excalidraw-room
+      - ai-proxy
+
+  ai-proxy:
+    build:
+      context: ./ai-proxy
+      dockerfile: Dockerfile
+    expose:
+      - "3016"
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - AI_MODEL=${AI_MODEL:-deepseek/deepseek-v3.2}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 64m
 
   excalidraw-room:
     build:

@@ -88,3 +88,9 @@ Key env vars (in `.env.development` / `.env.production`):
 - `VITE_APP_WS_SERVER_URL` — WebSocket collaboration server
 - `VITE_APP_AI_BACKEND` — AI backend endpoint
 - `VITE_APP_FIREBASE_CONFIG` — Firebase project config
+
+## Interaction Guidelines
+
+12. **Explain.** I use ai mostly for learning projects, at the end of each answer, explain what you did, how you did it, why is was done and if there was anything of note that happened.
+13. **Ask.** When there is any ambiguity a potential improvement or a additional interesting feature, use the questions tool to ask me what I want to do and confirm.
+14. **Sanity check.** When I say something that doesn't make any sense at all, question it and don't blindly execute it. Push back and ask for clarification before proceeding.
