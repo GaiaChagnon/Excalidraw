@@ -9,9 +9,9 @@ RUN apk add --no-cache nginx-mod-http-js
 RUN rm /etc/nginx/conf.d/default.conf
 
 # Copy nginx config and auth files
-COPY deploy/nginx/nginx.conf.template /etc/nginx/templates/default.conf.template
-COPY deploy/nginx/auth.js /etc/nginx/njs/auth.js
-COPY deploy/nginx/auth.html /usr/share/nginx/auth/auth.html
+COPY nginx/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY nginx/auth.js /etc/nginx/njs/auth.js
+COPY nginx/auth.html /usr/share/nginx/auth/auth.html
 
 # Copy pre-built app (built locally, uploaded to deploy/build/)
 COPY build/ /usr/share/nginx/html
